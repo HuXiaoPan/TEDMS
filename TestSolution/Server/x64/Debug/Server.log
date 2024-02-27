@@ -1,4 +1,0 @@
-﻿  Server.cpp
-E:\TEDMS\TestSolution\Server\Server.cpp(13,16): warning C4244: “初始化”: 从“SOCKET”转换到“int”，可能丢失数据
-E:\TEDMS\TestSolution\Server\Server.cpp(30,21): warning C4244: “初始化”: 从“SOCKET”转换到“int”，可能丢失数据
-  Server.vcxproj -> E:\TEDMS\TestSolution\x64\Debug\Server.exe

@@ -31,6 +31,28 @@ int main()
     char str[50];
     inet_ntop(AF_INET, &clnt_addr.sin_addr, str, 50);
     printf("new client fd %d! IP: %s Port: %d\n", clnt_sockfd, str, ntohs(clnt_addr.sin_port));
+
+    while (true)
+    {
+        char buf[1024];
+        memset(&buf, 0, sizeof(buf));
+        size_t read_bytes = recv(clnt_sockfd, buf, sizeof(buf), 0);
+        if (read_bytes > 0)
+        {
+            printf("message from client fd %d: %s\n", clnt_sockfd, buf);
+            send(clnt_sockfd, buf, sizeof(buf), 0);
+        }
+        else if (read_bytes == 0)
+        {
+            printf("client fd %d disconnected\n", clnt_sockfd);
+            closesocket(clnt_sockfd);
+            break;
+        }
+        else if (read_bytes == -1)
+        {
+            closesocket(clnt_sockfd);
+        }
+    }
     closesocket(sockfd);
     return 0;
 }
