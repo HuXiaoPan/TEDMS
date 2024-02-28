@@ -1,4 +1,6 @@
-﻿#include <iostream>
+﻿#if 0
+
+#include <iostream>
 #include <WS2tcpip.h>
 
 int main()
@@ -56,3 +58,213 @@ int main()
     closesocket(sockfd);
     return 0;
 }
+
+#else
+
+#include <iostream>
+#include <WS2tcpip.h>
+#include <MSWSock.h>
+#define MAX_BUFF_SIZE 1024
+
+// 定义重叠结构体
+typedef struct _PER_IO_OPERATION_DATA
+{
+    WSAOVERLAPPED Overlapped;
+    WSABUF DataBuf;
+    CHAR Buffer[MAX_BUFF_SIZE];
+    DWORD BytesSend;
+    DWORD BytesRecv;
+} PER_IO_OPERATION_DATA, * LPPER_IO_OPERATION_DATA;
+
+enum class IO_OP_TYPE
+{
+    IO_ACCEPT,
+    IO_SEND,
+    IO_RECV,
+    IO_CONN,
+    IO_DISCONN,
+};
+
+typedef struct OverlappedPerIO
+{
+    OVERLAPPED overlapped;
+    SOCKET socket;
+    WSABUF buf;
+    IO_OP_TYPE op_type;
+    char buffer[MAX_BUFF_SIZE];
+};
+
+struct SocketParam
+{
+    SOCKET listenSocket;
+    HANDLE iocp;
+};
+
+int initServer(SocketParam &param)
+{
+    // 初始化Windows Socket库
+    WSAData wsaData;
+    int ret = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (!ret)
+    {
+        param.listenSocket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
+        if (param.listenSocket != INVALID_SOCKET)
+        {
+            sockaddr_in serverAddr;
+            serverAddr.sin_family = AF_INET;
+            serverAddr.sin_addr.s_addr = INADDR_ANY;
+            serverAddr.sin_port = htons(8888);
+
+            ret = bind(param.listenSocket, (const sockaddr*)&serverAddr, sizeof(serverAddr));
+            if (!ret)
+            {
+                ret = listen(param.listenSocket, SOMAXCONN);
+                if (!ret)
+                {
+                    param.iocp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
+                    if (param.iocp)
+                    {
+                        if (CreateIoCompletionPort((HANDLE)param.listenSocket, param.iocp, 0, 0))
+                        {
+                            return 0;
+                        }
+                        CloseHandle(param.iocp);
+                    }
+                }
+            }
+            closesocket(param.listenSocket);
+        }
+        WSACleanup();
+    }
+    return -1;
+}
+int PostAcceptEx(SOCKET& listenSocket)
+{
+    SOCKET sock = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
+    OverlappedPerIO* overlapped = new OverlappedPerIO;
+    ZeroMemory(overlapped, sizeof(OverlappedPerIO));
+    overlapped->buf.buf = overlapped->buffer;
+    overlapped->buf.len = MAX_BUFF_SIZE;
+    overlapped->op_type = IO_OP_TYPE::IO_ACCEPT;
+    DWORD dwByteRecv = 0;
+    while (!AcceptEx(listenSocket, sock, overlapped->buf.buf, 0, sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &dwByteRecv, (LPOVERLAPPED)overlapped))
+    {
+        if (WSAGetLastError() == WSA_IO_PENDING)
+        {
+            break;
+        }
+    }
+}
+int main()
+{
+    int ret;
+    SocketParam p{ 0 };
+    ret = initServer(p);
+    if (ret)
+    {
+        return 0;
+    }
+    PostAcceptEx(p.listenSocket);
+    DWORD bytesTrans;
+    ULONG_PTR completionKey;
+    OverlappedPerIO* overlapped = nullptr;
+    while (true)
+    {
+        bool result = GetQueuedCompletionStatus(p.iocp, &bytesTrans, &completionKey, (LPOVERLAPPED*)overlapped, 0);
+        if (!result)
+        {
+            if (GetLastError() == WAIT_TIMEOUT || GetLastError() == ERROR_NETNAME_DELETED)
+            {
+                closesocket(overlapped->socket);
+                delete overlapped;
+            }
+            continue;
+        }
+        switch (overlapped->op_type)
+        {
+        case IO_OP_TYPE::IO_ACCEPT:
+        {
+            PostAcceptEx(p.listenSocket);
+            setsockopt()
+        }
+        break;
+        case IO_OP_TYPE::IO_RECV:
+        {
+
+        }
+        break;
+        default:
+            break;
+        }
+    }
+    //// 初始化Windows Socket库
+    //WSAData wsaData;
+    //int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+
+    //// 创建socket监听客户端连接
+    //SOCKET listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+    //sockaddr_in serverAddr;
+    //serverAddr.sin_family = AF_INET;
+    //inet_pton(AF_INET, "127.0.0.1", &serverAddr.sin_addr);
+    //serverAddr.sin_port = htons(8888);
+
+    //// 绑定地址和端口
+    //bind(listenSocket, (sockaddr*)&serverAddr, sizeof(serverAddr));
+
+    //// 开始监听
+    //listen(listenSocket, SOMAXCONN);
+
+    //// 创建IOCP句柄
+    //HANDLE iocpHandle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
+
+    //// 将监听socket关联到IOCP上
+    //CreateIoCompletionPort((HANDLE)listenSocket, iocpHandle, 0, 0);
+
+    //std::cout << "Server started." << std::endl;
+
+    //while (true)
+    //{
+    //    sockaddr_in clientAddr;
+    //    int addrLen = sizeof(clientAddr);
+
+    //    // 接收客户端连接
+    //    SOCKET clientSocket = accept(listenSocket, (sockaddr*)&clientAddr, &addrLen);
+    //    if (clientSocket == INVALID_SOCKET) continue;
+
+    //    // 将客户端socket关联到IOCP上
+    //    HANDLE clientHandle = CreateIoCompletionPort((HANDLE)clientSocket, iocpHandle, 0, 0);
+
+    //    // 创建重叠结构体
+    //    LPPER_IO_OPERATION_DATA perIoData = new PER_IO_OPERATION_DATA();
+    //    memset(&(perIoData->Overlapped), 0, sizeof(WSAOVERLAPPED));
+    //    perIoData->DataBuf.len = MAX_BUFF_SIZE;
+    //    perIoData->DataBuf.buf = perIoData->Buffer;
+
+    //    DWORD bytesRecv = 0;
+    //    DWORD flags = 0;
+
+    //    // 接收客户端数据
+    //    if (WSARecv(clientSocket, &(perIoData->DataBuf), 1, &bytesRecv, &flags, &(perIoData->Overlapped), NULL) == SOCKET_ERROR)
+    //    {
+    //        if (WSAGetLastError() != WSA_IO_PENDING)
+    //        {
+    //            std::cout << "WSARecv failed: " << WSAGetLastError() << std::endl;
+    //            delete perIoData;
+    //            closesocket(clientSocket);
+    //            continue;
+    //        }
+    //    }
+    //    printf("message from client fd %d: %s\n", clientSocket, perIoData->DataBuf.buf);
+    //    char str[50];
+    //    inet_ntop(AF_INET, &clientAddr.sin_addr, str, 50);
+    //    printf("new client fd %d! IP: %s Port: %d\n", clientSocket, str, ntohs(clientAddr.sin_port));
+    //}
+
+    //CloseHandle(iocpHandle);
+    //closesocket(listenSocket);
+    //WSACleanup();
+
+    //return 0;
+}
+#endif // 0
