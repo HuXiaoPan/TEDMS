@@ -176,6 +176,8 @@ int main()
     LPOverlappedPerIO overlapped;
     int i = 0;
     int k = 0;
+
+    //auto c = getchar();
      while (true)
     {
         i++;
@@ -219,6 +221,34 @@ int main()
 
         }
         break;
+        case IO_OP_TYPE::IO_SEND:
+        {
+            std::cout << "Happened send : " << bytesTrans << std::endl;
+            if (bytesTrans < 1)
+            {
+                std::cout << "closesocket : " << overlapped->socket << std::endl;
+                if (overlapped) closesocket(overlapped->socket);
+                delete overlapped;
+                continue;
+            }
+            std::cout << "Send Data: " << overlapped->buffer << std::endl;
+
+            DWORD dwRecv = 0, dwFlag = 0;
+
+            ZeroMemory(overlapped->buffer, MAX_BUFF_SIZE);
+            overlapped->buf.buf = overlapped->buffer;
+            overlapped->buf.len = MAX_BUFF_SIZE;
+            overlapped->op_type = IO_OP_TYPE::IO_RECV;
+
+            int r = WSARecv(overlapped->socket, &overlapped->buf, 1, &dwRecv, &dwFlag, &overlapped->overlapped, 0);
+            if (r == SOCKET_ERROR && WSAGetLastError() != WSA_IO_PENDING)
+            {
+                std::cout << "WSARecv failed : " << WSAGetLastError() << std::endl;
+            }
+
+
+        }
+        break;
         case IO_OP_TYPE::IO_RECV:
         {
             std::cout << "Happened recv : " << bytesTrans << std::endl;
@@ -230,8 +260,14 @@ int main()
                 continue;
             }
             std::cout << "Recv Data: " << overlapped->buffer << std::endl;
-            DWORD dwRecv = 0, dwFlag = 0;
-            int r = WSARecv(overlapped->socket, &overlapped->buf, 1, &dwRecv, &dwFlag, &overlapped->overlapped, 0);
+
+            ZeroMemory(overlapped->buffer, MAX_BUFF_SIZE);
+            strcpy_s(overlapped->buffer, "Server is here");
+            overlapped->buf.buf = overlapped->buffer;
+            overlapped->buf.len = MAX_BUFF_SIZE;
+            overlapped->op_type = IO_OP_TYPE::IO_SEND;
+            DWORD dwSend = 0;
+            int r = WSASend(overlapped->socket, &overlapped->buf, 1, &dwSend, 0, &overlapped->overlapped, 0);
             if (r == SOCKET_ERROR && WSAGetLastError() != WSA_IO_PENDING)
             {
                 std::cout << "WSARecv failed : " << WSAGetLastError() << std::endl;
