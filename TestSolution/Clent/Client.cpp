@@ -33,21 +33,21 @@ int main()
             printf("socket already disconnected, can't write any more!\n");
             break;
         }
-        memset(&buf, 0, sizeof(buf));
-        size_t read_bytes = recv(sockfd, buf, sizeof(buf), 0);
-        if (read_bytes > 0)
-        {
-            printf("message from server: %s\n", buf);
-        }
-        else if (read_bytes == 0)
-        {
-            printf("server socket disconnected!\n");
-            break;
-        }
-        else if (read_bytes == -1)
-        {
-            closesocket(sockfd);
-        }
+        //memset(&buf, 0, sizeof(buf));
+        //size_t read_bytes = recv(sockfd, buf, sizeof(buf), 0);
+        //if (read_bytes > 0)
+        //{
+        //    printf("message from server: %s\n", buf);
+        //}
+        //else if (read_bytes == 0)
+        //{
+        //    printf("server socket disconnected!\n");
+        //    break;
+        //}
+        //else if (read_bytes == -1)
+        //{
+        //    closesocket(sockfd);
+        //}
     }
     closesocket(sockfd);
 }

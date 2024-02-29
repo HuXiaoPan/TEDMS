@@ -130,6 +130,7 @@ int initServer(SocketParam &param)
                         {
                             return 0;
                         }
+                        std::cout << "CreateIoCompletionPort listen socket failed! " << std::endl;
                         CloseHandle(param.iocp);
                     }
                 }
@@ -145,6 +146,8 @@ int PostAcceptEx(SOCKET& listenSocket)
     SOCKET sock = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
     OverlappedPerIO* overlapped = new OverlappedPerIO;
     ZeroMemory(overlapped, sizeof(OverlappedPerIO));
+
+    overlapped->socket = sock;
     overlapped->buf.buf = overlapped->buffer;
     overlapped->buf.len = MAX_BUFF_SIZE;
     overlapped->op_type = IO_OP_TYPE::IO_ACCEPT;
@@ -173,15 +176,16 @@ int main()
     LPOverlappedPerIO overlapped;
     int i = 0;
     int k = 0;
-    while (true)
+     while (true)
     {
         i++;
-        if (i > 1000000)
+        if (i > 5000000)
         {
             std::cout << "loop " << k++ << std::endl;
             i = 0;
         }
         bool result = GetQueuedCompletionStatus(p.iocp, &bytesTrans, &completionKey, (LPOVERLAPPED*)&overlapped, 0);
+        if(overlapped) std::cout << "type " << (int)overlapped->op_type << std::endl;
         if (!result)
         {
             if (GetLastError() == WAIT_TIMEOUT || GetLastError() == ERROR_NETNAME_DELETED)
@@ -198,14 +202,17 @@ int main()
             PostAcceptEx(p.listenSocket);
             setsockopt(overlapped->socket, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, (char*)(&p.listenSocket), sizeof(SOCKET));
             printf("new client fd %d! IP: %s\n", overlapped->socket, overlapped->buffer);
-            ZeroMemory(overlapped, sizeof(OverlappedPerIO));
+            ZeroMemory(overlapped->buffer, MAX_BUFF_SIZE);
             overlapped->buf.buf = overlapped->buffer;
             overlapped->buf.len = MAX_BUFF_SIZE;
             overlapped->op_type = IO_OP_TYPE::IO_RECV;
-            CreateIoCompletionPort((HANDLE)overlapped->socket, p.iocp, 0, 0);
+            if (!CreateIoCompletionPort((HANDLE)overlapped->socket, p.iocp, 0, 0))
+            {
+                std::cout << "CreateIoCompletionPort failed" << std::endl;
+            }
             DWORD dwRecv = 0, dwFlag = 0;
-            int r = WSARecv(overlapped->socket, &overlapped->buf, 1, &dwRecv, &dwFlag, &(overlapped->overlapped), 0);
-            if (ret == SOCKET_ERROR && WSAGetLastError() == WSA_IO_PENDING)
+            int r = WSARecv(overlapped->socket, &overlapped->buf, 1, &dwRecv, &dwFlag, &overlapped->overlapped, 0);
+            if (r == SOCKET_ERROR && WSAGetLastError() != WSA_IO_PENDING)
             {
                 std::cout << "WSARecv failed : " << WSAGetLastError() << std::endl;
             }
@@ -217,11 +224,18 @@ int main()
             std::cout << "Happened recv : " << bytesTrans << std::endl;
             if (bytesTrans < 1)
             {
+                std::cout << "closesocket : " << overlapped->socket << std::endl;
                 if (overlapped) closesocket(overlapped->socket);
                 delete overlapped;
                 continue;
             }
             std::cout << "Recv Data: " << overlapped->buffer << std::endl;
+            DWORD dwRecv = 0, dwFlag = 0;
+            int r = WSARecv(overlapped->socket, &overlapped->buf, 1, &dwRecv, &dwFlag, &overlapped->overlapped, 0);
+            if (r == SOCKET_ERROR && WSAGetLastError() != WSA_IO_PENDING)
+            {
+                std::cout << "WSARecv failed : " << WSAGetLastError() << std::endl;
+            }
         }
         break;
         default:
