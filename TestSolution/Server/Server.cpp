@@ -123,16 +123,14 @@ int initServer(SocketParam &param)
                 ret = listen(param.listenSocket, SOMAXCONN);
                 if (!ret)
                 {
-                    param.iocp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
+                    //param.iocp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
+                    param.iocp = CreateIoCompletionPort((HANDLE)param.listenSocket, 0, 89757, 0);
                     if (param.iocp)
                     {
-                        if (CreateIoCompletionPort((HANDLE)param.listenSocket, param.iocp, 0, 0))
-                        {
-                            return 0;
-                        }
-                        std::cout << "CreateIoCompletionPort listen socket failed! " << std::endl;
-                        CloseHandle(param.iocp);
+                        return 0;
                     }
+					std::cout << "CreateIoCompletionPort listen socket failed! " << std::endl;
+					CloseHandle(param.iocp);
                 }
             }
             closesocket(param.listenSocket);
@@ -177,7 +175,7 @@ int main()
     int i = 0;
     int k = 0;
 
-    //auto c = getchar();
+    auto c = getchar();
      while (true)
     {
         i++;
@@ -208,7 +206,7 @@ int main()
             overlapped->buf.buf = overlapped->buffer;
             overlapped->buf.len = MAX_BUFF_SIZE;
             overlapped->op_type = IO_OP_TYPE::IO_RECV;
-            if (!CreateIoCompletionPort((HANDLE)overlapped->socket, p.iocp, 0, 0))
+            if (!CreateIoCompletionPort((HANDLE)overlapped->socket, p.iocp, 901106, 0))
             {
                 std::cout << "CreateIoCompletionPort failed" << std::endl;
             }
