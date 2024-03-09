@@ -1,0 +1,4 @@
+# 忽略
+/TestSolution/x64/
+/TestSolution/.vs/
+/TestSolution/*/x64/
