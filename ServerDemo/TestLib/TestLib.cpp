@@ -1,0 +1,4 @@
+void Nothing()
+{
+    return;
+}
