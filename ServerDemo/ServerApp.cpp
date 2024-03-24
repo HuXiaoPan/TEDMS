@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Global.h"
+#include "logger.h"
 
 #ifdef USE_TEST
     #include "TestLib.h"
@@ -7,17 +8,19 @@
 
 int main(int argc, char const *argv[])
 {
-    std::cout << "ServerApp is running!" << std::endl;
+    LOG_INFO("Server is run!!!\n");
 
 #ifdef USE_TEST
     TestFunc();
 #else
-    std::cout << "Test OFF!" << std::endl;
+    LOG_DEBUG("Test OFF!\n");
 #endif
     // report time stamp
-    std::cout << " Time stamp " << TIMESTAMP << std::endl;
+    LOG_DEBUG("Time stamp %c\n", TIMESTAMP);
 
     // report version
-    std::cout << " Version " << Tutorial_VERSION_MAJOR << "." << Tutorial_VERSION_MINOR << "." << Tutorial_VERSION_PATCH << std::endl;
+    LOG_DEBUG(" Version %f.%f.%f\n", Tutorial_VERSION_MAJOR,Tutorial_VERSION_MINOR,Tutorial_VERSION_PATCH);
+    
+    LOG_INFO("Server is over!!!\n");
     return 0;
 }

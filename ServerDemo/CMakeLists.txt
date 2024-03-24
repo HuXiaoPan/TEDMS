@@ -19,8 +19,8 @@ if(USE_TEST)
     # list(APPEND EXTRA_INCLUDES ${PROJECT_SOURCE_DIR}/Test)
 endif()
 
-# add_subdirectory(Utils)
-# list(APPEND EXTRA_LIBS UtilsLib)
+add_subdirectory(Utils)
+list(APPEND EXTRA_LIBS UtilsLib)
 # list(APPEND EXTRA_INCLUDES ${PROJECT_SOURCE_DIR}/Utils/includes/)
 
 #set 命令指定 var_name 变量，用 ${var_name} 获取变量的值。
