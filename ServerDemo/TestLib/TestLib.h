@@ -1,3 +1,3 @@
 #define TEST 3
 
-void Nothing();
+void TestFunc();

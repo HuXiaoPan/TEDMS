@@ -1,27 +1,19 @@
 #include <iostream>
-#include "Test.h"
-#include "TestLib.h"
+#include "Global.h"
 
 #ifdef USE_TEST
-    #include "MathFunctions.h"
+    #include "TestLib.h"
 #endif
-
-int func1(int a, int b);
-int func2(int a, int b);
 
 int main(int argc, char const *argv[])
 {
+    std::cout << "ServerApp is running!" << std::endl;
 
 #ifdef USE_TEST
-    std::cout << "Test ON!" << std::endl;
+    TestFunc();
 #else
     std::cout << "Test OFF!" << std::endl;
 #endif
-    Nothing();
-    int a = func1(8,28);
-    int b = func2(753,55);
-    std::cout << a << "Server is running!" << b << std::endl;
-
     // report time stamp
     std::cout << " Time stamp " << TIMESTAMP << std::endl;
 

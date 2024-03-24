@@ -1,15 +1,9 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.10) # CMake依赖最小版本,必写
 
 # set the project name
-# project(Server)
+# project(ServerApp)
 # set the project name and version
-project(Server VERSION 0.0.1)
-
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/Lib)
-
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/Lib)
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+project(ServerApp VERSION 0.0.1)
 
 # option 表示提供用户可以选择的选项。命令格式为：option(<variable> "description [initial value])。
 option(USE_TEST "Use Test lib" ON)
@@ -18,39 +12,58 @@ option(USE_TEST "Use Test lib" ON)
 # add_subdirectory(Test)
 
 if(USE_TEST)
-  add_subdirectory(TestLib)
-  list(APPEND EXTRA_LIBS TestLib)
-  # list(APPEND EXTRA_INCLUDES ${PROJECT_SOURCE_DIR}/Test)
+    add_definitions(-DUSE_TEST)
+    message(STATUS "Use the testlib")
+    add_subdirectory(TestLib)
+    list(APPEND EXTRA_LIBS TestLib)
+    # list(APPEND EXTRA_INCLUDES ${PROJECT_SOURCE_DIR}/Test)
 endif()
 
-# 这表示将时间戳已指定格式保存到 COMPILE_TIME 变量中。
-string(TIMESTAMP COMPILE_TIME %Y%m%d-%H%M%S)
-
-configure_file(Test.h.in Test.h)
+# add_subdirectory(Utils)
+# list(APPEND EXTRA_LIBS UtilsLib)
+# list(APPEND EXTRA_INCLUDES ${PROJECT_SOURCE_DIR}/Utils/includes/)
 
 #set 命令指定 var_name 变量，用 ${var_name} 获取变量的值。
-#set(SRC_LIST a.cpp b.cpp c.cpp)
-set(SRC_LIST a.cpp b.cpp c.cpp)
-
-# specify the C++ standard
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(SRC_LIST ServerApp.cpp)
 
 # add the executable
 add_executable(${PROJECT_NAME} ${SRC_LIST})
 
+# 依赖库
 target_link_libraries(${PROJECT_NAME} PUBLIC ${EXTRA_LIBS})
 
+# 头文件
 target_include_directories(${PROJECT_NAME} PUBLIC
                            ${PROJECT_BINARY_DIR}
                            # ${PROJECT_SOURCE_DIR}/Test
                            # ${EXTRA_INCLUDES}
                            )
 
-install(TARGETS ${PROJECT_NAME} TestLib
-                           RUNTIME DESTINATION ${PROJECT_BINARY_DIR}../../../App/bin
-                           LIBRARY DESTINATION ${PROJECT_BINARY_DIR}../../../App/lib
-                           ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}../../../App/lib)
+# 对工程重名为
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES  OUTPUT_NAME "ServerApp.exe")
+#cmake 在构建一个新的target 时，会尝试清理掉其他使用这个名字的库
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES CLEAN_DIRECT_OUTPUT 1)
+
+# 这表示将时间戳已指定格式保存到 COMPILE_TIME 变量中。
+string(TIMESTAMP COMPILE_TIME %Y%m%d-%H%M%S)
+
+configure_file(defines/Global.h.in Global.h)
+
+# specify the C++ standard
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/Lib) # 静态库输出位置
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/Lib) # 动态库输出位置
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin) # 可执行文件输出位置
+
+install(TARGETS ${PROJECT_NAME} TestLib #UtilsLib
+                           RUNTIME DESTINATION ${PROJECT_BINARY_DIR}../../../App/bin    # 可执行文件安装位置
+                           LIBRARY DESTINATION ${PROJECT_BINARY_DIR}../../../App/lib    # 动态库安装位置
+                           ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}../../../App/lib)   # 静态库安装位置
 
 # CMAKE_SOURCE_DIR	根源目录
 # CMAKE_CURRENT_SOURCE_DIR	如果使用子项目和目录，则为当前源目录。
