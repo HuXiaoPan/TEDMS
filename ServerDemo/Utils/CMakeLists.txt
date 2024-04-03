@@ -8,3 +8,8 @@ add_library(UtilsLib SHARED ${SRC_LIST})
 
 # 头文件
 target_include_directories(UtilsLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/includes)
+
+install(TARGETS UtilsLib
+                           RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/App/bin    # 可执行文件安装位置
+                           LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/App/bin    # 动态库安装位置
+                           ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/App/bin)   # 静态库安装位置

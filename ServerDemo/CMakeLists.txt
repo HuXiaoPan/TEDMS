@@ -20,7 +20,11 @@ if(USE_TEST)
 endif()
 
 add_subdirectory(Utils)
+add_subdirectory(Servers)
+add_subdirectory(defines)
 list(APPEND EXTRA_LIBS UtilsLib)
+list(APPEND EXTRA_LIBS ServersLib)
+
 # list(APPEND EXTRA_INCLUDES ${PROJECT_SOURCE_DIR}/Utils/includes/)
 
 #set 命令指定 var_name 变量，用 ${var_name} 获取变量的值。
@@ -60,10 +64,10 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/Lib) # 动态库输出�
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin) # 可执行文件输出位置
 
-install(TARGETS ${PROJECT_NAME} TestLib #UtilsLib
-                           RUNTIME DESTINATION ${PROJECT_BINARY_DIR}../../../App/bin    # 可执行文件安装位置
-                           LIBRARY DESTINATION ${PROJECT_BINARY_DIR}../../../App/lib    # 动态库安装位置
-                           ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}../../../App/lib)   # 静态库安装位置
+install(TARGETS ${PROJECT_NAME}
+                           RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/App/bin    # 可执行文件安装位置
+                           LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/App/lib    # 动态库安装位置
+                           ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/App/lib)   # 静态库安装位置
 
 # CMAKE_SOURCE_DIR	根源目录
 # CMAKE_CURRENT_SOURCE_DIR	如果使用子项目和目录，则为当前源目录。
@@ -84,3 +88,4 @@ install(TARGETS ${PROJECT_NAME} TestLib #UtilsLib
 # LDFLAGS += -Wl,--gc-sections
 # add_definitions("-ffunction-sections -fdata-sections")
 # set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections")
+
