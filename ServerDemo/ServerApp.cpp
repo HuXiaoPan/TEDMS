@@ -1,7 +1,9 @@
 #include <iostream>
 #include "Global.h"
 #include "logger.h"
+#include "datetime.h"
 #include "ServersManager.h"
+#include <unistd.h>
 
 #ifdef USE_TEST
     #include "TestLib.h"
@@ -26,9 +28,19 @@ int main(int argc, char const *argv[])
 
     // report version
     LOG_DEBUG(" Version %d.%d.%d\n", Tutorial_VERSION_MAJOR,Tutorial_VERSION_MINOR,Tutorial_VERSION_PATCH);
+    
+    
+    int i = 0;
+    int pre = -1;
     while (true)
     {
-        LOG_INFO("%s\n", "Server is running!");
+        utils::Datetime datatime;
+        int h = datatime.hour();
+        if(pre == 23 && h == 0)i=0;
+        pre = h;
+       
+        LOG_INFO("%s%d%s\n", "[次数报告：",++i,"]Server is running!");
+         sleep(2);
     }
     
     

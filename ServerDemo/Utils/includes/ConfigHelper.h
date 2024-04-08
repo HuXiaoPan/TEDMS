@@ -1,6 +1,8 @@
 #ifndef UTILS_CONFIGHELPER_H
 #define UTILS_CONFIGHELPER_H
 
+#include <string>
+
 namespace utils
 {
     class ConfigHelper
@@ -10,6 +12,8 @@ namespace utils
     public:
         ConfigHelper(/* args */);
         ~ConfigHelper();
+
+        bool ReadCfg(const std::string &filename);
     };
     
     ConfigHelper::ConfigHelper(/* args */)
