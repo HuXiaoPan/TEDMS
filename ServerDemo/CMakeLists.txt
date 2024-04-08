@@ -69,6 +69,14 @@ install(TARGETS ${PROJECT_NAME}
                            LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/App/lib    # 动态库安装位置
                            ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/App/lib)   # 静态库安装位置
 
+set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,-rpath,../lib")
+
+# 设置要安装的目标文件
+set(CONFIGS configs/config.ini)
+
+# 定义install规则
+install(FILES ${CONFIGS} DESTINATION ${PROJECT_SOURCE_DIR}/App/configs)
+
 # CMAKE_SOURCE_DIR	根源目录
 # CMAKE_CURRENT_SOURCE_DIR	如果使用子项目和目录，则为当前源目录。
 # PROJECT_SOURCE_DIR	当前 cmake 项目的源目录。

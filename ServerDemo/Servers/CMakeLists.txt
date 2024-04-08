@@ -18,5 +18,5 @@ target_link_libraries(ServersLib PUBLIC ${EXTRA_LIBS})
 
 install(TARGETS ServersLib
                            RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/App/bin    # 可执行文件安装位置
-                           LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/App/bin    # 动态库安装位置
-                           ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/App/bin)   # 静态库安装位置
+                           LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/App/lib    # 动态库安装位置
+                           ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/App/lib)   # 静态库安装位置
